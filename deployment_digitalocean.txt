@@ -1,0 +1,84 @@
+Create a droplet with password
+
+login through powershell or cmd
+> ssh root@<ip of droplet>
+
+
+run commands to update ubuntu droplet or vm
+> sudo apt update && sudo apt upgrade -y		--press yes when prompt
+> python3 --version						--check python version
+> sudo apt install python3-pip			-- install pip
+> sudo pip install virtualenv				-- install virtual env
+
+
+install postgres db
+> sudo apt install postgresql postgresql-contrib 	--install postgresql database
+> psql --version							--check psql cli for postgresql
+> psql -U postgres  --ERROR "peer authentication failed"
+	--postgres takes username from ubuntu that is root , even if you pass -U postgres , it will still use your ubuntu username,
+		which is why this error occurs, to fix this login as postgres and follow below
+> sudo cat /etc/passwd						--check all users in machine and find "postgres" in that
+> su - postgres							--connect to postgres user and after connection run next command
+> psql -U postgres						--you should be able to login now
+--permanent fix of peer authenticatin error
+>\password postgres						--set postgres password
+>\q									--exit from postgres db
+>exit									--exit as postgres user
+>cd /etc/postgresql/14/main
+>ls
+>sudo vi postgresql.conf
+-- search for "CONNECTION  AND AUTHENTICATION SETTINGS"
+-- under listen_addresses 
+-- add "listen_addresses = '*' "
+>sudo vi pg_hba.conf
+-- Change peer to md5 in local and change ipv4 to 0.0.0.0/0, also change ipv6 to ::/0 and peer to md5
+> systemctl restart postgres					--you need to restart postgres services in order to apply recent changes
+
+
+
+Add new user to ubuntu 		-- we want to limit user permission
+> adduser abhay
+--login as ssh abhay@<host ip>
+-- you need to give newly created user a sudo access
+-- login to root by exiting machine and login as root or
+> su - root
+> usermod -aG sudo <user name>
+
+> cd ~				--this will take you to home directory
+> pwd					--this will show which directory you are in cuurently
+
+
+--go to home directory and run below commands to make virtual environment
+> cd /home/<user>
+> mkdir app					-- create app folder for the project
+> cd app					-- go to app folder
+> virtualenv env				-- create virtual env
+> source env/bin/activate		-- activate virtualenvironment
+
+> mkdir src
+> cd src
+-- Now copy all the code to the machine
+> git clone <repo link> . 		-- we use "." so to not create extra folder for repo
+> pip install -r requirements.txt
+-- if some library error occurs, search for it and deactivate vnevn first and install it and then again 
+activate venv and run pip install requirements.txt
+>uvicorn app.main:app --reload
+
+--add environment files to ubuntu
+> export MY_NAME=abhay				--this will add environment to the ubuntu, but this will not persist on reboot
+> printenv					--this will list all the env variables of the os(ubuntu)
+> unset MY_NAME				--this will remove the env name
+> printenv					--check if env MY_NAME is removed or not
+
+--outside created app directory create a file .env
+> touch .env				--the file will be hidden
+> ls -la 					--list all files even hiddden ones
+> vi .env					--copy paste all the env variables in to the created .env file
+> cat .env					--check the file if data saved or not
+> ls -la					--check for .profile file( this file will be available in the base home directory)
+> vi .profile				--open this file
+> set -o allexport; source /home/abhay/app/.env set +o allexport			
+		--run the above command and add the file path accordingly to the ".profile" file, this will set the env variables everytime when os reboots.
+> exit					--exit out and login again and check if env varibales are set
+> printenv
+>
