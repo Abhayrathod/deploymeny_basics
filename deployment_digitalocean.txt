@@ -93,7 +93,7 @@ activate venv and run pip install requirements.txt
 -- install gunicorn (stay in virtual environment)
 > pip install gunicorn 
 
--- now to configure server for workers and automatic start if server creashes or reboots
+-- now to configure server for workers and automatic start if server crashes or reboots
 > gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000
 
 --create service in ubuntu to start the server on reboot
@@ -109,3 +109,24 @@ activate venv and run pip install requirements.txt
 
 
 --NGINX setup
+> sudo apt install nginx -y
+> systemctl start nginx
+> cd /etc/nginx/sites-available/
+> cat default
+--copy data from nginx file in project folder to the default file in server
+> systemctl restart nginx
+
+--add domain name for the server
+--go to any domain provider purchase and add name servers of digital ocean to dns record
+--after adding name server add A record and CNAME record to the server,wait some time and open domain in browser
+--after got certbot and see video how to configure ssl certificate
+> systemctl status nginx				--check if nginc is enable to run automatically when os reboots
+> systemctl enable nginx				--if nginx is diabled run this command
+
+--setup firewall 
+> sudo ufw status						--check if firewall is active or inactive
+> sudo ufw allow http
+> sudo ufw sllow https
+> sudo ufw allow ssh
+> sudo ufw allow 5432
+> sudo ufw delete allow 5432				--if you want to delete any rules
